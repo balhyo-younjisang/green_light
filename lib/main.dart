@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MaterialApp(home: Home()));
@@ -61,8 +62,30 @@ class _GetLocationState extends State<GetLocation> {
     }
   }
 
+  void _callApi() async {
+    String endpointUrl =
+        'http://api.data.go.kr/openapi/tn_pubr_public_traffic_light_api';
+    Map<String, String> queryParams = {
+      'serviceKey':
+          'u307bNcv7UxjNBwmqI6CEJvAmUngUCHdbiNshmqRo5NCx7HTS7wQSnfyMWmLZVEl9SpoMHOBYe9%2BX5ISPChUZg%3D%3D',
+      'pageNo': '0',
+      'numOfRows': '100',
+      'type': 'json'
+    };
+
+    Uri queryString =
+        Uri.parse(endpointUrl).replace(queryParameters: queryParams);
+    log(queryString.toString());
+    var res = await http.get(queryString);
+    log('response : ${res.toString()}');
+  }
+
   void _getUserLocation() {
     //Get location when moving
+    location.changeSettings(
+        interval: 10000,
+        distanceFilter:
+            5); // If 10 sec are passed and if the phone is moved al least 5 meters024
     location.onLocationChanged.listen((LocationData currentLocation) {
       log(currentLocation.toString());
       setState(() {
@@ -77,6 +100,7 @@ class _GetLocationState extends State<GetLocation> {
     _permission();
     super.initState();
     _getUserLocation();
+    _callApi();
   }
 
   @override
@@ -85,7 +109,7 @@ class _GetLocationState extends State<GetLocation> {
       body: GoogleMap(
         onMapCreated: _onMapCreated,
         initialCameraPosition:
-            CameraPosition(target: LatLng(lat!, lng!), zoom: 19.3),
+            CameraPosition(target: LatLng(lat!, lng!), zoom: 18.0),
         myLocationButtonEnabled: true, // 구글맵의 gps 위치 확대 버튼 on/off
         myLocationEnabled: true,
       ),
