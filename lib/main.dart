@@ -32,14 +32,13 @@ class _GetLocationState extends State<GetLocation> {
   late PermissionStatus _permissionGranted;
   late GoogleMapController mapController;
   LocationData? _userLocation;
+  Location location = Location();
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
 
-  Future<void> _getUserLocation() async {
-    Location location = Location();
-
+  void _permission() async {
     // Check if location service is enable
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
@@ -57,7 +56,9 @@ class _GetLocationState extends State<GetLocation> {
         return;
       }
     }
+  }
 
+  void _getUserLocation() {
     //Get location when moving
     location.changeSettings(
         interval: 10000,
@@ -71,10 +72,16 @@ class _GetLocationState extends State<GetLocation> {
   }
 
   @override
+  void initState() {
+    _permission();
+    super.initState();
+    _getUserLocation();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
-        onCameraIdle: _getUserLocation,
         onMapCreated: _onMapCreated,
         initialCameraPosition: CameraPosition(
             target: _userLocation != null
