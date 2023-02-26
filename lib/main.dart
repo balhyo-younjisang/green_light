@@ -75,19 +75,21 @@ class _GetLocationState extends State<GetLocation> {
 
     Uri queryString =
         Uri.parse(endpointUrl).replace(queryParameters: queryParams);
-    log(queryString.toString());
     var res = await http.get(queryString);
-    log('response : ${res.toString()}');
+    log(queryString.toString());
+    var responseBody = res.body;
+    log(responseBody);
   }
 
   void _getUserLocation() {
     //Get location when moving
     location.changeSettings(
-        interval: 10000,
+        interval: 300000,
         distanceFilter:
-            5); // If 10 sec are passed and if the phone is moved al least 5 meters024
+            5); // If 10 sec are passed and if the phone is moved al least 5 meters
     location.onLocationChanged.listen((LocationData currentLocation) {
       log(currentLocation.toString());
+      _callApi();
       setState(() {
         lat = currentLocation.latitude;
         lng = currentLocation.longitude;
@@ -100,7 +102,6 @@ class _GetLocationState extends State<GetLocation> {
     _permission();
     super.initState();
     _getUserLocation();
-    _callApi();
   }
 
   @override
