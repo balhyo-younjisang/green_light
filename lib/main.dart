@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -31,7 +33,8 @@ class _GetLocationState extends State<GetLocation> {
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
   late GoogleMapController mapController;
-  LocationData? _userLocation;
+  double? lat;
+  double? lng;
   Location location = Location();
 
   void _onMapCreated(GoogleMapController controller) {
@@ -60,13 +63,11 @@ class _GetLocationState extends State<GetLocation> {
 
   void _getUserLocation() {
     //Get location when moving
-    location.changeSettings(
-        interval: 10000,
-        distanceFilter:
-            5); // If 10 sec are passed and if the phone is moved al least 5 meters
     location.onLocationChanged.listen((LocationData currentLocation) {
+      log(currentLocation.toString());
       setState(() {
-        _userLocation = currentLocation;
+        lat = currentLocation.latitude;
+        lng = currentLocation.longitude;
       });
     });
   }
@@ -83,11 +84,10 @@ class _GetLocationState extends State<GetLocation> {
     return Scaffold(
       body: GoogleMap(
         onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-            target: _userLocation != null
-                ? LatLng(_userLocation!.longitude!, _userLocation!.longitude!)
-                : LatLng(0, 0),
-            zoom: 11.0),
+        initialCameraPosition:
+            CameraPosition(target: LatLng(lat!, lng!), zoom: 19.3),
+        myLocationButtonEnabled: true, // 구글맵의 gps 위치 확대 버튼 on/off
+        myLocationEnabled: true,
       ),
     );
   }
