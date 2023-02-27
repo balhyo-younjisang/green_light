@@ -64,13 +64,12 @@ class _GetLocationState extends State<GetLocation> {
 
   void _callApi() async {
     String endpointUrl =
-        'http://api.data.go.kr/openapi/tn_pubr_public_traffic_light_api';
+        'http://t-data.seoul.go.kr/apig/apiman-gateway/tapi/v2xSignalPhaseTimingInformation/1.0';
     Map<String, String> queryParams = {
-      'serviceKey':
-          'u307bNcv7UxjNBwmqI6CEJvAmUngUCHdbiNshmqRo5NCx7HTS7wQSnfyMWmLZVEl9SpoMHOBYe9%2BX5ISPChUZg%3D%3D',
-      'pageNo': '0',
-      'numOfRows': '100',
-      'type': 'json'
+      'apiKey': '64a651c1-a611-4716-97bb-ad20df53dd71',
+      'type': 'json',
+      'pageNo': '1',
+      'numOfRows': '1',
     };
 
     Uri queryString =
