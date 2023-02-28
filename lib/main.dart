@@ -1,7 +1,7 @@
 // Copyright 2018 The Flutter team. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -20,6 +20,50 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(title: 'Green Light', home: GetLocation());
   }
+}
+
+class Info {
+  String? ntPdsgStatNm; // 북쪽 보행 신호
+  String? etPdsgStatNm; // 동쪽 보행 신호
+  String? stPdsgStatNm; // 남쪽 보행 신호
+  String? wtPdsgStatNm; // 서쪽 보행 신호
+  String? nePdsgStatNm; // 북동 보행 신호
+  String? sePdsgStatNm; // 남동 보행 신호
+  String? swPdsgStatNm; // 남서 보행 신호
+  String? nwPdsgStatNm; // 북서 보행 신호
+
+  Info(
+      {this.ntPdsgStatNm,
+      this.etPdsgStatNm,
+      this.stPdsgStatNm,
+      this.wtPdsgStatNm,
+      this.nePdsgStatNm,
+      this.sePdsgStatNm,
+      this.swPdsgStatNm,
+      this.nwPdsgStatNm});
+
+  // Json Decode
+  Info.fromJson(Map<dynamic, dynamic> json)
+      : ntPdsgStatNm = json['ntPdsgStatNm'],
+        etPdsgStatNm = json['etPdsgStatNm'],
+        stPdsgStatNm = json['stPdsgStatNm'],
+        wtPdsgStatNm = json['wtPdsgStatNm'],
+        nePdsgStatNm = json['nePdsgStatNm'],
+        sePdsgStatNm = json['sePdsgStatNm'],
+        swPdsgStatNm = json['swPdsgStatNm'],
+        nwPdsgStatNm = json['nwPdsgStatNm'];
+
+  // Json encode
+  Map<String, dynamic> toJson() => {
+        'ntPdsgStatNm': ntPdsgStatNm,
+        'etPdsgStatNm': etPdsgStatNm,
+        'stPdsgStatNm': stPdsgStatNm,
+        'wtPdsgStatNm': wtPdsgStatNm,
+        'nePdsgStatNm': nePdsgStatNm,
+        'sePdsgStatNm': sePdsgStatNm,
+        'swPdsgStatNm': swPdsgStatNm,
+        'nwPdsgStatNm': nwPdsgStatNm
+      };
 }
 
 class GetLocation extends StatefulWidget {
@@ -62,9 +106,13 @@ class _GetLocationState extends State<GetLocation> {
     }
   }
 
+  //called API
   void _callApi() async {
-    String endpointUrl =
-        'http://t-data.seoul.go.kr/apig/apiman-gateway/tapi/v2xSignalPhaseTimingInformation/1.0';
+    String remainTimeApiEndpointUrl =
+        'http://t-data.seoul.go.kr/apig/apiman-gateway/tapi/v2xSignalPhaseTimingInformation/1.0'; // <-- 잔여 시간 정보
+    String signalInfoEndpointUrl =
+        'http://t-data.seoul.go.kr/apig/apiman-gateway/tapi/v2xSignalPhaseInformation/1.0'; //<-- 신호 정보
+
     Map<String, String> queryParams = {
       'apiKey': '64a651c1-a611-4716-97bb-ad20df53dd71',
       'type': 'json',
@@ -72,20 +120,28 @@ class _GetLocationState extends State<GetLocation> {
       'numOfRows': '1',
     };
 
-    Uri queryString =
-        Uri.parse(endpointUrl).replace(queryParameters: queryParams);
-    var res = await http.get(queryString);
-    log(queryString.toString());
-    var responseBody = res.body;
-    log(responseBody);
+    Uri remainTimeQueryString = Uri.parse(remainTimeApiEndpointUrl)
+        .replace(queryParameters: queryParams);
+    var remainTimeRes = await http.get(remainTimeQueryString);
+
+    Uri signalInfoQueryString =
+        Uri.parse(signalInfoEndpointUrl).replace(queryParameters: queryParams);
+    var signalInfoRes = await http.get(signalInfoQueryString);
+
+    log(remainTimeRes.body.toString());
+    log(signalInfoRes.body.toString());
+    String infoMap = jsonDecode(signalInfoRes.body
+        .toString()); // <-- Unhandled Exception: type 'List<dynamic>' is not a subtype of type 'Map<dynamic, String>'
+    var info = Info.fromJson(infoMap as Map);
+    log(info.etPdsgStatNm.toString());
   }
 
   void _getUserLocation() {
     //Get location when moving
     location.changeSettings(
-        interval: 300000,
+        interval: 30000,
         distanceFilter:
-            5); // If 10 sec are passed and if the phone is moved al least 5 meters
+            5); // If 30000 ms are passed and if the phone is moved al least 5 meters
     location.onLocationChanged.listen((LocationData currentLocation) {
       log(currentLocation.toString());
       _callApi();
